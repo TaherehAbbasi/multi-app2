@@ -39,15 +39,14 @@
         name: docker
         state: started
         enabled: yes
-
-    - name: Check if /usr/local/bin/docker-compose exists.
+  - name: Check if /usr/local/bin/docker-compose exists.
       stat:
         path: /usr/local/bin/docker-compose
       register: docker_compose_file
 
     - name: Install or upgrade docker-compose
       get_url:
-        url: "https://github.com/docker/compose/releases/download/1.21.2/docker-compose-Linux-x86_64"
+        url: "https://github.com/docker/compose/releases/download/v2.11.2/docker-compose-linux-x86_64"
         validate_certs: no
         dest: /usr/local/bin/docker-compose
         mode: 'a+x'
@@ -55,3 +54,19 @@
       when: >
         docker_compose_current_version is not defined
         or docker_compose_current_version is version(docker_compose_latest, '<')
+    - name: Creates directory
+      file:
+        path: /home/sql
+        state: directory
+        mode: 0775
+    - name: Copy  content
+      ansible.builtin.copy:
+        src: /home/tahereh/Downloads/ansible-multiapp/docker-config/tasks/sql-compose.yml
+        dest: /home/sql
+
+
+    - name: Run sql  container
+      become: no
+      shell:
+        chdir: /home/sql
+        cmd: docker-compose -f sql-compose.yml up -d

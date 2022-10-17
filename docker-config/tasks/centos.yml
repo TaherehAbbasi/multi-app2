@@ -1,0 +1,57 @@
+---   
+    - name: Remove docker if installed from CentOS repo
+      yum:
+        name:
+          - docker
+          - docker-client
+          - docker-client-latest
+          - docker-common
+          - docker-latest
+          - docker-latest-logrotate
+          - docker-logrotate
+          - docker-engine
+        state: absent
+
+    - name: Install required pkgs
+      yum:
+        name:
+          - yum-utils
+          - device-mapper-persistent-data
+          - lvm2
+        state: latest
+
+    - name: Add Docker repo
+      get_url:
+        url: https://download.docker.com/linux/centos/docker-ce.repo
+        dest: /etc/yum.repos.d/docker-ce.repo
+
+    - name: Install Docker
+      yum:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+        state: latest
+
+
+    - name: Start Docker service
+      service:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Check if /usr/local/bin/docker-compose exists.
+      stat:
+        path: /usr/local/bin/docker-compose
+      register: docker_compose_file
+
+    - name: Install or upgrade docker-compose
+      get_url:
+        url: "https://github.com/docker/compose/releases/download/1.21.2/docker-compose-Linux-x86_64"
+        validate_certs: no
+        dest: /usr/local/bin/docker-compose
+        mode: 'a+x'
+        force: yes
+      when: >
+        docker_compose_current_version is not defined
+        or docker_compose_current_version is version(docker_compose_latest, '<')

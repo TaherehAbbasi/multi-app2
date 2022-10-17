@@ -1,0 +1,27 @@
+---
+ - hosts: ubuntu
+   become_user: root
+   become: yes
+   gather_facts: no
+   tasks:
+#   - name: Update repository
+ #    apt_repository:
+ #      repo: 'ppa:git-core/ppa'
+  #     state: present
+   - name: Install git
+     apt:
+       name: git
+       state: present
+       update_cache: yes
+   - name: Clone a github repository
+     ansible.builtin.git:
+       repo: 'https://github.com/TaherehAbbasi/multiapp.git'
+       dest: /home/
+       accept_hostkey: true
+       clone: yes
+       update: yes
+   - name: Run container
+     become: True
+     shell:
+       cmd: "docker-compose -f docker-compose.yml  up -d"
+       chdir: /home/

@@ -1,0 +1,43 @@
+---
+   - name: Update repository
+     apt_repository:
+       repo: 'ppa:git-core/ppa'
+       state: present
+   - name: Install git
+     apt:
+       name: 
+        - git
+        - unzip
+       state: present
+       update_cache: yes
+   - name: Create a directory 
+     ansible.builtin.file:
+       path: /home/app
+       state: directory
+       mode: '0755'
+   - name: Clone a github repository
+     shell: |
+          cd /home/app
+#           wget https://github.com/TaherehAbbasi/multiapp/archive/refs/heads/main.zip --no-check-certificate
+   - name: Extract git project
+     unarchive:
+       src: /home/app/main.zip
+       dest: /home/app
+       remote_src: yes
+#       extra_opts:
+ #       - '-z'
+#     ansible.builtin.git:
+ #      repo: 'https://github.com/TaherehAbbasi/multiapp.git'
+  #     dest: /home/app
+   #    accept_hostkey: true
+    #   clone: yes
+     #  update: yes
+ #    environment:
+  #    - GIT_SSL_NO_VERIFY: "true"
+
+   - name: Run container
+     become: True
+     shell:
+       cmd: "docker-compose -f docker-compose.yml  up -d"
+       chdir: /home/app
+       become: false
